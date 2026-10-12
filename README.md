@@ -12,6 +12,7 @@ A bounded, auditable MVP for the loop **SEARCH → VERIFY → REFLECT → IMPROV
 - Reflection reports written after each run; strategy reward tracking uses an 80/20 exploit/explore selection rule.
 - Streamlit human review queue with six requested labels and comments.
 - Metrics and human-audited precision reporting.
+- A resumable worker entry point for scheduled bounded iterations.
 - No automatic deployment of policy changes; policy versions are stored with every decision.
 
 ## Setup
@@ -30,6 +31,8 @@ campus-agent --db data/campus_agent.sqlite3 init-db
 campus-agent --db data/pilot.sqlite3 pilot --university 'University of Washington' --limit 50 --iterations 2
 campus-agent --db data/pilot.sqlite3 metrics
 streamlit run campus_agent/dashboard.py
+# Continue from the last recorded iteration after a stop/restart:
+campus-agent-worker --db data/pilot.sqlite3 --university 'University of Washington' --limit 50 --iterations 1
 ```
 
 The default pilot is mock-only. For live use, implement a compliant provider client and set its credentials outside the repository; do not scrape restricted directories, bypass robots or terms, infer private email addresses, or automatically send outreach.

@@ -17,6 +17,7 @@ dev = ["pytest>=8,<9"]
 
 [project.scripts]
 campus-agent = "campus_agent.cli:main"
+campus-agent-worker = "campus_agent.worker:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
