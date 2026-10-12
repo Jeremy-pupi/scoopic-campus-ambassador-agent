@@ -8,8 +8,14 @@ st.set_page_config(page_title="Scoopic Campus Agent", layout="wide"); st.title("
 m = metrics(DB); cols = st.columns(6)
 for col, (label, key) in zip(cols, [("Candidates", "total_candidates"), ("Approved", "approved"), ("Needs review", "pending_review"), ("Rejected", "rejected"), ("Human reviews", "human_reviews"), ("Precision", "human_audited_precision")]):
     value = m[key]; col.metric(label, "—" if value is None else (f"{value:.1%}" if key == "human_audited_precision" else value))
-st.subheader("Review queue"); status = st.selectbox("Decision", ["NEEDS_REVIEW", "APPROVED", "REJECTED"])
-rows = DB.fetchall("SELECT d.id AS decision_id, d.status, d.overall_score, d.reasons_json, c.* FROM decisions d JOIN candidates c ON c.id=d.candidate_id WHERE d.status=? AND NOT EXISTS (SELECT 1 FROM reviews r WHERE r.decision_id=d.id) ORDER BY d.overall_score ASC LIMIT 100", (status,))
+with st.expander("Performance breakdown"):
+    st.write({"estimated_cost_usd": m["estimated_cost_usd"], "cost_per_approved_usd": m["cost_per_approved_usd"]})
+    st.write("By university"); st.dataframe(m["by_university"], use_container_width=True)
+    st.write("By role"); st.dataframe(m["by_role"], use_container_width=True)
+    st.write("By iteration"); st.dataframe(m["by_iteration"], use_container_width=True)
+st.subheader("Review queue"); status = st.selectbox("Decision", ["NEEDS_REVIEW", "APPROVED", "REJECTED"]); sample = st.selectbox("Sampling", ["Lowest confidence", "Random sample"])
+order = "d.overall_score ASC" if sample == "Lowest confidence" else "RANDOM()"
+rows = DB.fetchall(f"SELECT d.id AS decision_id, d.status, d.overall_score, d.reasons_json, c.* FROM decisions d JOIN candidates c ON c.id=d.candidate_id WHERE d.status=? AND NOT EXISTS (SELECT 1 FROM reviews r WHERE r.decision_id=d.id) ORDER BY {order} LIMIT 100", (status,))
 if not rows: st.info("No unreviewed candidates in this queue.")
 for row in rows:
     with st.expander(f"{row['full_name']} · {row['university']} · {row['overall_score']:.0%}"):
