@@ -43,7 +43,11 @@ class Database:
             if owns_connection:
                 conn.close()
     def init(self) -> None:
-        with self.connect() as conn: conn.executescript(SCHEMA)
+        with self.connect() as conn:
+            conn.executescript(SCHEMA)
+            columns = {row["name"] for row in conn.execute("PRAGMA table_info(runs)")}
+            if "cost_usd" not in columns:
+                conn.execute("ALTER TABLE runs ADD COLUMN cost_usd REAL NOT NULL DEFAULT 0")
     def execute(self, sql: str, params: tuple[Any, ...] = ()) -> int:
         with self.connect() as conn:
             cur = conn.execute(sql, params); return int(cur.lastrowid or 0)
