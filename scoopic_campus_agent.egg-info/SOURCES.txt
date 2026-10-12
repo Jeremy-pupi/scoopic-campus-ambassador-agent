@@ -1,0 +1,17 @@
+README.md
+pyproject.toml
+campus_agent/__init__.py
+campus_agent/agent.py
+campus_agent/cli.py
+campus_agent/dashboard.py
+campus_agent/db.py
+campus_agent/evaluate.py
+campus_agent/policy.py
+campus_agent/providers.py
+scoopic_campus_agent.egg-info/PKG-INFO
+scoopic_campus_agent.egg-info/SOURCES.txt
+scoopic_campus_agent.egg-info/dependency_links.txt
+scoopic_campus_agent.egg-info/entry_points.txt
+scoopic_campus_agent.egg-info/requires.txt
+scoopic_campus_agent.egg-info/top_level.txt
+tests/test_agent.py

@@ -1,0 +1,63 @@
+Metadata-Version: 2.4
+Name: scoopic-campus-agent
+Version: 0.1.0
+Summary: Bounded, auditable campus ambassador discovery and review agent
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: streamlit<2,>=1.38
+Provides-Extra: openai
+Requires-Dist: openai<2,>=1.40; extra == "openai"
+Provides-Extra: dns
+Requires-Dist: dnspython<3,>=2.6; extra == "dns"
+Provides-Extra: dev
+Requires-Dist: pytest<9,>=8; extra == "dev"
+
+# Scoopic Campus Ambassador Discovery Agent
+
+A bounded, auditable MVP for the loop **SEARCH → VERIFY → REFLECT → IMPROVE**. It stores every candidate, evidence item, decision, strategy version, reflection, human correction, and run event in SQLite. It does not send outreach email.
+
+## Implemented
+
+- Pluggable `SearchProvider` and `EmailVerifier` interfaces.
+- Explicit deterministic mock provider for a safe 50-candidate University of Washington pilot. Mock records use `example.invalid`, fixture URLs, and `data_mode=mock`; they are not real leads.
+- Deterministic verification policy with separate email, student, role, fit, duplicate, and overall scores.
+- Duplicate fingerprints and source/query/date provenance.
+- Resumable iteration records and event log. Re-running the pilot preserves historical decisions.
+- Reflection reports written after each run; strategy reward tracking uses an 80/20 exploit/explore selection rule.
+- Streamlit human review queue with six requested labels and comments.
+- Metrics and human-audited precision reporting.
+- No automatic deployment of policy changes; policy versions are stored with every decision.
+
+## Setup
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e '.[dev]'
+cp .env.example .env
+campus-agent --db data/campus_agent.sqlite3 init-db
+```
+
+## Safe bounded pilot
+
+```bash
+campus-agent --db data/pilot.sqlite3 pilot --university 'University of Washington' --limit 50 --iterations 2
+campus-agent --db data/pilot.sqlite3 metrics
+streamlit run campus_agent/dashboard.py
+```
+
+The default pilot is mock-only. For live use, implement a compliant provider client and set its credentials outside the repository; do not scrape restricted directories, bypass robots or terms, infer private email addresses, or automatically send outreach.
+
+## Stop, resume, and monitor
+
+A run is checkpointed in `runs`; candidates and evidence are committed per item. Stop the process normally and invoke the same command again with the same database to resume/continue without losing prior work. Inspect `events`, `reflections`, `strategies`, and `metrics` for an audit trail.
+
+## Evaluation
+
+Human review labels are separate from AI decisions. `human_audited_precision` is `Correct reviews / all reviews`, and remains `null` until reviewers label records. A 95% precision target is a measured acceptance criterion, not a claim made by the mock pilot.
+
+## Optional integrations
+
+- `pip install -e '.[openai]'` for an OpenAI-backed evidence judge, behind a feature flag and human approval.
+- `pip install -e '.[dns]'` and pass a DNS checker to `EmailVerifier` for MX signals. MX validity never proves mailbox deliverability.
+- A mailbox verification API can be passed as `mailbox_checker`; respect its terms, rate limits, and privacy rules.

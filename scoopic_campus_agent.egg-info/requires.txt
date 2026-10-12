@@ -1,0 +1,10 @@
+streamlit<2,>=1.38
+
+[dev]
+pytest<9,>=8
+
+[dns]
+dnspython<3,>=2.6
+
+[openai]
+openai<2,>=1.40

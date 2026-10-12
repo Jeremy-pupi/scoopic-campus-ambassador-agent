@@ -1,0 +1,2 @@
+[console_scripts]
+campus-agent = campus_agent.cli:main
